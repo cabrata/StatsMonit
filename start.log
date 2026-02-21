@@ -1,0 +1,13 @@
+
+> statsmonit@1.0.0 start
+> node index.js
+
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+The Server Is Running On http://localhost:8088
+Temperature data not available.
+Temperature data not available.
+Temperature data not available.
+Temperature data not available.
+Temperature data not available.
+Temperature data not available.
+Killed

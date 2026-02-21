@@ -1,0 +1,12 @@
+services:
+  statsmonit:
+    build: .
+    container_name: statsmonit
+    restart: unless-stopped
+    ports:
+      - "8088:8088"
+    environment:
+      - PORT=8088
+    # Uncomment the following volumes to monitor the host system instead of the container
+    # volumes:
+    #   - /:/host:ro,rslave
