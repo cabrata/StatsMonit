@@ -17,7 +17,6 @@
 
 
 ## Features
-
 - **Real-time Monitoring**: Get live updates every 3 seconds.
 - **CPU Usage**: Shows CPU load percentage and model details.
 - **Memory Usage**: Displays RAM consumption with detailed usage statistics.
