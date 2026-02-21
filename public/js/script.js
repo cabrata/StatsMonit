@@ -941,6 +941,15 @@ function updateStats(data) {
     document.getElementById('ram-progress').style.width = `${ramUsage}%`;
     updateChart(ramChart, ramUsage);
 
+    // Update memory hardware info
+    if (data.mem_layout) {
+        const ml = data.mem_layout;
+        document.getElementById('mem-brand').textContent = ml.manufacturer || '--';
+        document.getElementById('mem-size').textContent = ml.totalSize || '--';
+        document.getElementById('mem-type').textContent = ml.type || '--';
+        document.getElementById('mem-speed').textContent = ml.speed || '--';
+    }
+
     const diskUsage = parseFloat(data.disk.usedPercent);
     document.getElementById('disk-usage').textContent = data.disk.usedPercent;
     document.getElementById('disk-usage-center').textContent = data.disk.usedPercent;
