@@ -59,7 +59,22 @@
 
 ## Usage
 
-### Start the Server
+### Using Docker (Recommended)
+
+You can easily run StatsMonit using Docker.
+
+1. Using **Docker Compose**:
+   ```bash
+   docker-compose up -d --build
+   ```
+
+2. Using **Docker CLI**:
+   ```bash
+   docker build -t statsmonit .
+   docker run -d -p 8088:8088 --name statsmonit statsmonit
+   ```
+
+### Start the Server (Manual)
 
 Run the following command to start the monitoring service:
 
