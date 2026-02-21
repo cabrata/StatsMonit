@@ -34,6 +34,70 @@
 - **g++** (to compile some packages)
 - **cmake** (to compile some packages)
 
+## 🐳 Using Docker from GHCR (No Build Required)
+
+You can pull the prebuilt image directly from **GitHub Container Registry (GHCR)** without building locally.
+
+### Pull the Image
+
+```bash
+docker pull ghcr.io/cabrata/statsmonit:latest
+```
+
+### Run the Container
+
+```bash
+docker run -d \
+  --name statsmonit \
+  -p 8088:8088 \
+  -e PORT=8088 \
+  --restart unless-stopped \
+  ghcr.io/cabrata/statsmonit:latest
+```
+
+Then open:
+
+```
+http://localhost:8088
+```
+
+---
+
+## 🧩 Using Docker Compose with GHCR
+
+Instead of building locally, use the remote image:
+
+```yaml
+services:
+  statsmonit:
+    image: ghcr.io/cabrata/statsmonit:latest
+    container_name: statsmonit
+    restart: unless-stopped
+    ports:
+      - "8088:8088"
+    environment:
+      - PORT=8088
+```
+
+Run:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+---
+
+## 🖥 Monitor Host System (Optional)
+
+If you want to monitor the **host system instead of the container**, add:
+
+```yaml
+    volumes:
+      - /:/host:ro,rslave
+```
+
+
 ### Steps
 1. Clone this repository:
    ```bash
