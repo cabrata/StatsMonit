@@ -14,6 +14,7 @@ const clients = new Set()
 
 setInterval(async () => {
   const stats = await getStats()
+  console.log(stats) 
   for (const socket of clients) {
     socket.emit("stats", stats)
   }

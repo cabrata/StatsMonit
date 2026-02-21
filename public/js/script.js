@@ -1,4 +1,7 @@
-const socket = io();
+let socket = null;
+let customServerUrl = localStorage.getItem('statsmonit-server-url') || '';
+let currentUrl = window.location.origin;
+
 let cpuChart, ramChart, diskChart, cpuTimelineChart, memoryTimelineChart, networkTimelineChart, heapChart;
 let isConnected = false;
 let isDarkTheme = true;
@@ -9,7 +12,7 @@ function showToast(message, type = 'info', duration = 3000) {
     const toastContainer = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
+
     toast.innerHTML = `
         <div class="flex items-center space-x-3">
             <i class="fas ${getToastIcon(type)} text-lg"></i>
@@ -21,12 +24,12 @@ function showToast(message, type = 'info', duration = 3000) {
             </button>
         </div>
     `;
-    
+
     toastContainer.appendChild(toast);
-    
+
     // Trigger show animation
     setTimeout(() => toast.classList.add('show'), 100);
-    
+
     // Auto remove
     setTimeout(() => removeToast(toast), duration);
 }
@@ -58,17 +61,31 @@ function hideLoadingScreen() {
 function initThemeToggle() {
     const themeToggle = document.getElementById('theme-toggle');
     const icon = themeToggle.querySelector('i');
-    
+
+    // Load saved theme preference
+    const savedTheme = localStorage.getItem('statsmonit-theme');
+    if (savedTheme === 'light') {
+        isDarkTheme = false;
+        document.body.classList.add('light-theme');
+        icon.className = 'fas fa-sun text-yellow-400';
+        // Apply light theme to charts after they are initialized
+        setTimeout(() => updateChartTheme(), 100);
+    }
+
     themeToggle.addEventListener('click', () => {
         isDarkTheme = !isDarkTheme;
-        document.body.classList.toggle('dark-theme', !isDarkTheme);
-        
+
         if (isDarkTheme) {
+            document.body.classList.remove('light-theme');
             icon.className = 'fas fa-moon text-yellow-400';
+            localStorage.setItem('statsmonit-theme', 'dark');
         } else {
+            document.body.classList.add('light-theme');
             icon.className = 'fas fa-sun text-yellow-400';
+            localStorage.setItem('statsmonit-theme', 'light');
         }
-        
+
+        updateChartTheme();
         showToast(`Switched to ${isDarkTheme ? 'dark' : 'light'} theme`, 'info', 2000);
     });
 }
@@ -77,7 +94,7 @@ function initThemeToggle() {
 function initFullscreenToggle() {
     const fullscreenToggle = document.getElementById('fullscreen-toggle');
     const icon = fullscreenToggle.querySelector('i');
-    
+
     fullscreenToggle.addEventListener('click', () => {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().then(() => {
@@ -96,12 +113,18 @@ function initFullscreenToggle() {
 // Settings functionality
 function initSettings() {
     const settingsBtn = document.getElementById('settings-btn');
-    
+
     settingsBtn.addEventListener('click', () => {
         Swal.fire({
             title: 'Dashboard Settings',
             html: `
                 <div class="text-left space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Server URL</label>
+                        <input type="url" id="settings-server-url" 
+                               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                               value="${customServerUrl || currentUrl}">
+                    </div>
                     <div>
                         <label class="block text-sm font-medium mb-2">Update Interval (ms)</label>
                         <input type="number" id="update-interval" 
@@ -144,16 +167,25 @@ function initSettings() {
         }).then((result) => {
             if (result.isConfirmed) {
                 // Save settings
+                const newServerUrl = document.getElementById('settings-server-url').value.trim();
+
+                if (newServerUrl && newServerUrl !== customServerUrl) {
+                    customServerUrl = newServerUrl;
+                    localStorage.setItem('statsmonit-server-url', newServerUrl);
+                    connectToServer(newServerUrl);
+                    showToast('Reconnecting to new server...', 'info');
+                }
+
                 const settings = {
                     updateInterval: parseInt(document.getElementById('update-interval').value),
                     highCpuAlert: document.getElementById('high-cpu-alert').checked,
                     highMemoryAlert: document.getElementById('high-memory-alert').checked,
                     highTempAlert: document.getElementById('high-temp-alert').checked
                 };
-                
+
                 localStorage.setItem('statsmonit-settings', JSON.stringify(settings));
                 updateInterval = settings.updateInterval;
-                
+
                 showToast('Settings saved successfully!', 'success');
             }
         });
@@ -163,7 +195,7 @@ function initSettings() {
 // Clear history functionality
 function initClearHistory() {
     const clearHistoryBtn = document.getElementById('clear-history');
-    
+
     clearHistoryBtn.addEventListener('click', () => {
         Swal.fire({
             title: 'Clear History',
@@ -188,18 +220,77 @@ function clearTimelineData() {
         cpuTimelineChart.data.datasets[0].data = [];
         cpuTimelineChart.update();
     }
-    
+
     if (memoryTimelineChart) {
         memoryTimelineChart.data.labels = [];
         memoryTimelineChart.data.datasets[0].data = [];
         memoryTimelineChart.update();
     }
-    
+
     if (networkTimelineChart) {
         networkTimelineChart.data.labels = [];
         networkTimelineChart.data.datasets[0].data = [];
         networkTimelineChart.data.datasets[1].data = [];
         networkTimelineChart.update();
+    }
+}
+
+// Dynamically update all Chart.js colors based on current theme
+function updateChartTheme() {
+    const emptySlice = isDarkTheme ? '#1F2937' : 'rgba(0, 0, 0, 0.08)';
+    const gridColor = isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.08)';
+    const tickColor = isDarkTheme ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)';
+    const titleColor = isDarkTheme ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)';
+    const tooltipBg = isDarkTheme ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.95)';
+    const tooltipText = isDarkTheme ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)';
+    const tooltipBorder = isDarkTheme ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)';
+    const legendColor = isDarkTheme ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)';
+
+    // Update doughnut charts (empty slice color)
+    [cpuChart, ramChart, diskChart].forEach(chart => {
+        if (chart) {
+            chart.data.datasets[0].backgroundColor[1] = emptySlice;
+            chart.options.plugins.tooltip.backgroundColor = tooltipBg;
+            chart.options.plugins.tooltip.titleColor = tooltipText;
+            chart.options.plugins.tooltip.bodyColor = tooltipText;
+            chart.options.plugins.tooltip.borderColor = tooltipBorder;
+            chart.update('none');
+        }
+    });
+
+    // Update timeline charts (grids, ticks, tooltips)
+    [cpuTimelineChart, memoryTimelineChart, networkTimelineChart].forEach(chart => {
+        if (chart) {
+            chart.options.scales.x.grid.color = gridColor;
+            chart.options.scales.x.ticks.color = tickColor;
+            chart.options.scales.y.grid.color = gridColor;
+            chart.options.scales.y.ticks.color = tickColor;
+            if (chart.options.scales.y.title) {
+                chart.options.scales.y.title.color = titleColor;
+            }
+            chart.options.plugins.tooltip.backgroundColor = tooltipBg;
+            chart.options.plugins.tooltip.titleColor = tooltipText;
+            chart.options.plugins.tooltip.bodyColor = tooltipText;
+            chart.options.plugins.tooltip.borderColor = tooltipBorder;
+            // Update legend color if present
+            if (chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+                chart.options.plugins.legend.labels.color = legendColor;
+            }
+            chart.update('none');
+        }
+    });
+
+    // Update heap bar chart
+    if (heapChart) {
+        heapChart.options.scales.x.grid.color = gridColor;
+        heapChart.options.scales.x.ticks.color = tickColor;
+        heapChart.options.scales.y.grid.color = gridColor;
+        heapChart.options.scales.y.ticks.color = tickColor;
+        heapChart.options.plugins.tooltip.backgroundColor = tooltipBg;
+        heapChart.options.plugins.tooltip.titleColor = tooltipText;
+        heapChart.options.plugins.tooltip.bodyColor = tooltipText;
+        heapChart.options.plugins.tooltip.borderColor = tooltipBorder;
+        heapChart.update('none');
     }
 }
 
@@ -289,13 +380,14 @@ function initCharts() {
         },
         options: {
             ...chartOptions,
+            animation: false,
             scales: {
                 x: {
                     grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: { 
+                    ticks: {
                         color: 'rgba(255, 255, 255, 0.7)',
                         maxTicksLimit: 8,
-                        callback: function(value, index) {
+                        callback: function (value, index) {
                             const label = this.getLabelForValue(value);
                             if (typeof label === 'string' && label.includes('T')) {
                                 return label.split('T')[1].substr(0, 5);
@@ -468,9 +560,9 @@ function initCharts() {
                 },
                 y: {
                     grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: { 
+                    ticks: {
                         color: 'rgba(255, 255, 255, 0.7)',
-                        callback: function(value) {
+                        callback: function (value) {
                             return formatBytes(value);
                         }
                     }
@@ -481,7 +573,7 @@ function initCharts() {
                 tooltip: {
                     ...chartOptions.plugins.tooltip,
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             return `${context.dataset.label}: ${formatBytes(context.raw)}`;
                         }
                     }
@@ -494,14 +586,14 @@ function initCharts() {
 function updateChart(chart, value) {
     const isOverload = value > 80;
     const isCritical = value > 90;
-    
+
     let color = chart.originalColor;
     if (isCritical) {
         color = '#EF4444'; // Red for critical
     } else if (isOverload) {
         color = '#F59E0B'; // Yellow for warning
     }
-    
+
     chart.data.datasets[0].data = [value, 100 - value];
     chart.data.datasets[0].backgroundColor[0] = color;
     chart.update('none'); // Disable animation for real-time updates
@@ -540,7 +632,7 @@ function updateTemperature(temp) {
 
         // Update status and colors
         temperatureElement.classList.remove('text-yellow-400', 'text-red-500', 'text-green-400');
-        
+
         if (numericTemp < 45) {
             tempStatusElement.textContent = 'Normal';
             tempStatusTextElement.textContent = 'Normal';
@@ -553,7 +645,7 @@ function updateTemperature(temp) {
             tempStatusElement.textContent = 'High';
             tempStatusTextElement.textContent = 'High';
             temperatureElement.classList.add('text-red-500');
-            
+
             // Alert for high temperature
             const settings = JSON.parse(localStorage.getItem('statsmonit-settings') || '{}');
             if (settings.highTempAlert !== false && numericTemp > 70) {
@@ -581,16 +673,16 @@ function formatBytes(bytes, decimals = 2) {
 
 function updateTimelineCharts(data) {
     const maxDataPoints = 20;
-    
+
     // Update CPU Timeline
     if (data.cpu_history && data.cpu_history.length > 0) {
         const labels = data.cpu_history.slice(-maxDataPoints).map(item => new Date(item.timestamp).toLocaleTimeString());
         const values = data.cpu_history.slice(-maxDataPoints).map(item => item.usage);
-        
+
         cpuTimelineChart.data.labels = labels;
         cpuTimelineChart.data.datasets[0].data = values;
         cpuTimelineChart.update('none');
-        
+
         // Update average
         const avg = values.reduce((a, b) => a + b, 0) / values.length;
         document.getElementById('cpu-avg').textContent = `Avg: ${avg.toFixed(1)}%`;
@@ -600,11 +692,11 @@ function updateTimelineCharts(data) {
     if (data.memory_history && data.memory_history.length > 0) {
         const labels = data.memory_history.slice(-maxDataPoints).map(item => new Date(item.timestamp).toLocaleTimeString());
         const values = data.memory_history.slice(-maxDataPoints).map(item => item.usage);
-        
+
         memoryTimelineChart.data.labels = labels;
         memoryTimelineChart.data.datasets[0].data = values;
         memoryTimelineChart.update('none');
-        
+
         // Update average
         const avg = values.reduce((a, b) => a + b, 0) / values.length;
         document.getElementById('mem-avg').textContent = `Avg: ${avg.toFixed(1)}%`;
@@ -615,12 +707,12 @@ function updateTimelineCharts(data) {
         const labels = data.network_history.slice(-maxDataPoints).map(item => new Date(item.timestamp).toLocaleTimeString());
         const downloadData = data.network_history.slice(-maxDataPoints).map(item => item.input);
         const uploadData = data.network_history.slice(-maxDataPoints).map(item => item.output);
-        
+
         networkTimelineChart.data.labels = labels;
         networkTimelineChart.data.datasets[0].data = downloadData;
         networkTimelineChart.data.datasets[1].data = uploadData;
         networkTimelineChart.update('none');
-        
+
         // Update peak
         const maxDown = Math.max(...downloadData);
         const maxUp = Math.max(...uploadData);
@@ -687,7 +779,7 @@ function updateSystemTime(timeData) {
 
 function updateBatteryStatus(batteryData) {
     const batteryCard = document.getElementById('battery-card');
-    
+
     if (!batteryData) {
         batteryCard.style.display = 'none';
         return;
@@ -695,10 +787,10 @@ function updateBatteryStatus(batteryData) {
 
     batteryCard.style.display = 'block';
     document.getElementById('battery-level').textContent = `${batteryData.level}%`;
-    
+
     const status = batteryData.isCharging ? 'Charging' : 'Discharging';
     document.getElementById('battery-status').textContent = status;
-    
+
     if (batteryData.timeLeft > 0) {
         const hours = Math.floor(batteryData.timeLeft / 60);
         const minutes = batteryData.timeLeft % 60;
@@ -713,7 +805,7 @@ function updateBatteryStatus(batteryData) {
     // Change color based on battery level
     const batteryLevel = document.getElementById('battery-level');
     batteryLevel.classList.remove('text-red-400', 'text-yellow-400', 'text-green-400');
-    
+
     if (batteryData.level <= 20) {
         batteryLevel.classList.add('text-red-400');
     } else if (batteryData.level <= 50) {
@@ -732,7 +824,7 @@ function updateNetworkInterfaces(networkData) {
     networkData.forEach(interface => {
         const card = document.createElement('div');
         card.className = 'network-interface-card';
-        
+
         card.innerHTML = `
             <div class="flex items-center justify-between mb-3">
                 <h4 class="font-semibold text-indigo-300 flex items-center">
@@ -752,7 +844,7 @@ function updateNetworkInterfaces(networkData) {
                 </div>
             </div>
         `;
-        
+
         container.appendChild(card);
     });
 }
@@ -771,7 +863,7 @@ function updateStats(data) {
     document.getElementById('ram-usage').textContent = data.ram;
     document.getElementById('ram-usage-center').textContent = data.ram;
     document.getElementById('ram-text').textContent = data.ram_text;
-    
+
     // Update RAM progress bar
     document.getElementById('ram-progress').style.width = `${ramUsage}%`;
     updateChart(ramChart, ramUsage);
@@ -780,7 +872,7 @@ function updateStats(data) {
     document.getElementById('disk-usage').textContent = data.disk.usedPercent;
     document.getElementById('disk-usage-center').textContent = data.disk.usedPercent;
     document.getElementById('disk-text').textContent = `${data.disk.used} / ${data.disk.total}`;
-    
+
     // Update disk progress bar
     document.getElementById('disk-progress').style.width = `${diskUsage}%`;
     updateChart(diskChart, diskUsage);
@@ -796,9 +888,9 @@ function updateStats(data) {
     document.getElementById('load-1').textContent = data.load_average[0].toFixed(2);
     document.getElementById('load-5').textContent = data.load_average[1].toFixed(2);
     document.getElementById('load-15').textContent = data.load_average[2].toFixed(2);
-    
+
     // Update load average text
-    document.getElementById('cpu-load-text').textContent = 
+    document.getElementById('cpu-load-text').textContent =
         `1m: ${data.load_average[0].toFixed(2)} 5m: ${data.load_average[1].toFixed(2)} 15m: ${data.load_average[2].toFixed(2)}`;
 
     // Update temperature
@@ -823,7 +915,7 @@ function updateStats(data) {
 
 function checkAlerts(data) {
     const settings = JSON.parse(localStorage.getItem('statsmonit-settings') || '{}');
-    
+
     // CPU alert
     if (settings.highCpuAlert !== false) {
         const cpuUsage = parseFloat(data.cpu);
@@ -831,7 +923,7 @@ function checkAlerts(data) {
             showToast(`High CPU usage: ${data.cpu}`, cpuUsage > 90 ? 'error' : 'warning');
         }
     }
-    
+
     // Memory alert
     if (settings.highMemoryAlert !== false) {
         const memUsage = parseFloat(data.ram);
@@ -844,7 +936,7 @@ function checkAlerts(data) {
 function updateConnectionStatus(connected) {
     const statusElement = document.getElementById('connection-status');
     const indicator = statusElement.parentElement.querySelector('.status-indicator');
-    
+
     if (connected) {
         statusElement.textContent = 'Connected';
         indicator.className = 'status-indicator indicator-green';
@@ -857,44 +949,78 @@ function updateConnectionStatus(connected) {
 }
 
 // Initialize everything when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Initialize charts
     initCharts();
-    
+
     // Initialize UI components
     initThemeToggle();
     initFullscreenToggle();
     initSettings();
     initClearHistory();
-    
+
     // Load saved settings
     const savedSettings = localStorage.getItem('statsmonit-settings');
     if (savedSettings) {
         const settings = JSON.parse(savedSettings);
         updateInterval = settings.updateInterval || updateInterval;
     }
+
+    initServerConnection();
 });
 
-// Socket event handlers
-socket.on('connect', () => {
-    updateConnectionStatus(true);
-    showToast('Connected to monitoring service', 'success');
-});
+function initServerConnection() {
+    // Always auto-connect: use saved URL or default to current origin
+    const serverUrl = customServerUrl || currentUrl;
+    connectToServer(serverUrl);
 
-socket.on('disconnect', () => {
-    updateConnectionStatus(false);
-    showToast('Disconnected from monitoring service', 'error');
-});
+    // Setup modal button for manual reconnection (triggered from Settings)
+    const connectBtn = document.getElementById('connect-server-btn');
+    const modalOverlay = document.getElementById('server-modal');
+    const modalUrlInput = document.getElementById('server-url-input');
 
-socket.on('stats', (data) => {
-    hideLoadingScreen();
-    updateStats(data);
-});
+    if (connectBtn) {
+        connectBtn.addEventListener('click', () => {
+            const url = modalUrlInput.value.trim();
+            if (url) {
+                localStorage.setItem('statsmonit-server-url', url);
+                customServerUrl = url;
+                modalOverlay.classList.remove('show');
+                connectToServer(url);
+                showToast('Connecting to server...', 'info');
+            }
+        });
+    }
+}
 
-socket.on('error', (error) => {
-    showToast('Connection error occurred', 'error');
-    console.error('Socket error:', error);
-});
+function connectToServer(url) {
+    if (socket) {
+        socket.disconnect();
+    }
+
+    socket = io(url);
+
+    // Socket event handlers
+    socket.on('connect', () => {
+        updateConnectionStatus(true);
+        showToast('Connected to monitoring service', 'success');
+    });
+
+    socket.on('disconnect', () => {
+        updateConnectionStatus(false);
+        showToast('Disconnected from monitoring service', 'error');
+    });
+
+    socket.on('stats', (data) => {
+        hideLoadingScreen();
+        updateStats(data);
+    });
+
+    socket.on('error', (error) => {
+        showToast('Connection error occurred', 'error');
+        console.error('Socket error:', error);
+    });
+}
 
 // Add keyboard shortcuts
 document.addEventListener('keydown', (e) => {
@@ -903,13 +1029,13 @@ document.addEventListener('keydown', (e) => {
         e.preventDefault();
         document.getElementById('fullscreen-toggle').click();
     }
-    
+
     // Ctrl+T for theme toggle
     if (e.ctrlKey && e.key === 't') {
         e.preventDefault();
         document.getElementById('theme-toggle').click();
     }
-    
+
     // Ctrl+, for settings
     if (e.ctrlKey && e.key === ',') {
         e.preventDefault();
