@@ -116,7 +116,7 @@
         </div>
 
         <!-- Main Dashboard Grid with improved mobile layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
             <!-- CPU Usage Card -->
             <div
                 class="gradient-bg rounded-xl p-4 sm:p-6 shadow-lg border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 card-hover backdrop-blur-sm group">
@@ -416,7 +416,7 @@
 
         <!-- Enhanced Timeline Graphs Section -->
         <div
-            class="gradient-bg rounded-xl p-4 sm:p-6 shadow-lg border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 mb-6 sm:mb-8 backdrop-blur-sm">
+            class="gradient-bg rounded-xl p-4 sm:p-6 shadow-lg border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 mb-4 sm:mb-6 backdrop-blur-sm">
             <div
                 class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
                 <div class="flex items-center space-x-2 sm:space-x-3">
@@ -438,7 +438,7 @@
                     </button>
                 </div>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                 <!-- CPU Timeline -->
                 <div class="bg-gray-800/50 p-3 sm:p-6 rounded-lg border border-gray-700/50 backdrop-blur-sm">
                     <div class="flex items-center justify-between mb-3 sm:mb-4">
@@ -448,7 +448,7 @@
                         </h3>
                         <span class="text-xs text-gray-400" id="cpu-avg">Avg: --%</span>
                     </div>
-                    <div class="h-48 sm:h-64">
+                    <div class="h-40 sm:h-48">
                         <canvas id="cpu-timeline-chart"></canvas>
                     </div>
                 </div>
@@ -462,7 +462,7 @@
                         </h3>
                         <span class="text-xs text-gray-400" id="mem-avg">Avg: --%</span>
                     </div>
-                    <div class="h-48 sm:h-64">
+                    <div class="h-40 sm:h-48">
                         <canvas id="memory-timeline-chart"></canvas>
                     </div>
                 </div>
@@ -476,7 +476,7 @@
                         </h3>
                         <span class="text-xs text-gray-400" id="net-avg">Peak: --</span>
                     </div>
-                    <div class="h-48 sm:h-64">
+                    <div class="h-40 sm:h-48">
                         <canvas id="network-timeline-chart"></canvas>
                     </div>
                 </div>
@@ -490,158 +490,147 @@
                         </h3>
                         <span class="text-xs text-gray-400" id="heap-percent">Usage: --%</span>
                     </div>
-                    <div class="h-48 sm:h-64">
+                    <div class="h-40 sm:h-48">
                         <canvas id="heap-chart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Enhanced System Details Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <!-- Process & Runtime Stats -->
+        <!-- System Details Grid - Individual Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+
+            <!-- Process Count -->
             <div
-                class="gradient-bg rounded-xl p-6 shadow-lg border border-gray-700/50 hover:border-teal-500/50 transition-all duration-300 card-hover backdrop-blur-sm">
-                <div class="flex justify-between items-center mb-6">
-                    <div class="flex items-center space-x-3">
-                        <div class="p-2 bg-teal-500/20 rounded-lg">
-                            <i class="fas fa-tasks text-teal-400 text-lg"></i>
+                class="gradient-bg rounded-xl p-4 sm:p-6 shadow-lg border border-gray-700/50 hover:border-teal-500/50 transition-all duration-300 card-hover backdrop-blur-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-teal-300 flex items-center">
+                        <div class="p-1.5 bg-teal-500/20 rounded-lg mr-2">
+                            <i class="fas fa-tasks text-teal-400 text-sm"></i>
                         </div>
-                        <div>
-                            <h2 class="text-xl font-semibold text-teal-300">Process & Runtime</h2>
-                            <p class="text-xs text-gray-400">System Processes & Node.js Stats</p>
-                        </div>
-                    </div>
-                    <div class="status-pill bg-teal-900/50 text-teal-300 backdrop-blur-sm">
-                        <i class="fas fa-cogs text-xs mr-1"></i>Active
-                    </div>
-                </div>
-
-                <!-- Process Count -->
-                <div class="mb-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700/50">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-semibold text-teal-300 flex items-center">
-                            <i class="fas fa-list text-sm mr-2"></i>
-                            Process Count
-                        </h3>
-                        <span class="text-2xl font-bold text-teal-400" id="process-count">0</span>
-                    </div>
-                    <div class="grid grid-cols-3 gap-3 text-center">
-                        <div class="p-2 bg-gray-700/50 rounded">
-                            <div class="text-lg font-bold text-green-400" id="process-running">0</div>
-                            <div class="text-xs text-gray-400">Running</div>
-                        </div>
-                        <div class="p-2 bg-gray-700/50 rounded">
-                            <div class="text-lg font-bold text-blue-400" id="process-sleeping">0</div>
-                            <div class="text-xs text-gray-400">Sleeping</div>
-                        </div>
-                        <div class="p-2 bg-gray-700/50 rounded">
-                            <div class="text-lg font-bold text-yellow-400" id="process-blocked">0</div>
-                            <div class="text-xs text-gray-400">Blocked</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Runtime Heap Statistics -->
-                <div class="p-4 bg-gray-800/50 rounded-lg border border-gray-700/50">
-                    <h3 class="font-semibold text-yellow-300 mb-4 flex items-center">
-                        <i class="fab fa-node-js text-sm mr-2"></i>
-                        Node.js Heap Statistics
+                        Processes
                     </h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="text-center p-3 bg-gray-700/50 rounded">
-                            <p class="text-gray-400 text-xs mb-1">Heap Used</p>
-                            <p class="text-lg font-bold text-pink-400" id="heap-used">--</p>
-                        </div>
-                        <div class="text-center p-3 bg-gray-700/50 rounded">
-                            <p class="text-gray-400 text-xs mb-1">Heap Total</p>
-                            <p class="text-lg font-bold text-blue-400" id="heap-total">--</p>
-                        </div>
-                        <div class="text-center p-3 bg-gray-700/50 rounded">
-                            <p class="text-gray-400 text-xs mb-1">RSS</p>
-                            <p class="text-lg font-bold text-green-400" id="heap-rss">--</p>
-                        </div>
-                        <div class="text-center p-3 bg-gray-700/50 rounded">
-                            <p class="text-gray-400 text-xs mb-1">External</p>
-                            <p class="text-lg font-bold text-purple-400" id="heap-external">--</p>
-                        </div>
+                    <span class="text-2xl font-bold text-teal-400" id="process-count">0</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="p-2 bg-gray-800/50 rounded-lg">
+                        <div class="text-lg font-bold text-green-400" id="process-running">0</div>
+                        <div class="text-xs text-gray-400">Running</div>
+                    </div>
+                    <div class="p-2 bg-gray-800/50 rounded-lg">
+                        <div class="text-lg font-bold text-blue-400" id="process-sleeping">0</div>
+                        <div class="text-xs text-gray-400">Sleeping</div>
+                    </div>
+                    <div class="p-2 bg-gray-800/50 rounded-lg">
+                        <div class="text-lg font-bold text-yellow-400" id="process-blocked">0</div>
+                        <div class="text-xs text-gray-400">Blocked</div>
                     </div>
                 </div>
             </div>
 
-            <!-- System Time & Battery -->
+            <!-- Node.js Heap Statistics -->
             <div
-                class="gradient-bg rounded-xl p-6 shadow-lg border border-gray-700/50 hover:border-emerald-500/50 transition-all duration-300 card-hover backdrop-blur-sm">
-                <div class="flex justify-between items-center mb-6">
-                    <div class="flex items-center space-x-3">
-                        <div class="p-2 bg-emerald-500/20 rounded-lg">
-                            <i class="fas fa-clock text-emerald-400 text-lg"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-semibold text-emerald-300">Time & Power</h2>
-                            <p class="text-xs text-gray-400">System Time & Battery Status</p>
-                        </div>
+                class="gradient-bg rounded-xl p-4 sm:p-6 shadow-lg border border-gray-700/50 hover:border-yellow-500/50 transition-all duration-300 card-hover backdrop-blur-sm">
+                <h3 class="font-semibold text-yellow-300 mb-4 flex items-center">
+                    <div class="p-1.5 bg-yellow-500/20 rounded-lg mr-2">
+                        <i class="fab fa-node-js text-yellow-400 text-sm"></i>
                     </div>
-                    <div class="status-pill bg-emerald-900/50 text-emerald-300 backdrop-blur-sm">
-                        <i class="fas fa-sync-alt text-xs mr-1 animate-spin"></i>Live
+                    Heap Statistics
+                </h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="text-center p-2 bg-gray-800/50 rounded-lg">
+                        <p class="text-gray-400 text-xs mb-1">Heap Used</p>
+                        <p class="text-base font-bold text-pink-400" id="heap-used">--</p>
+                    </div>
+                    <div class="text-center p-2 bg-gray-800/50 rounded-lg">
+                        <p class="text-gray-400 text-xs mb-1">Heap Total</p>
+                        <p class="text-base font-bold text-blue-400" id="heap-total">--</p>
+                    </div>
+                    <div class="text-center p-2 bg-gray-800/50 rounded-lg">
+                        <p class="text-gray-400 text-xs mb-1">RSS</p>
+                        <p class="text-base font-bold text-green-400" id="heap-rss">--</p>
+                    </div>
+                    <div class="text-center p-2 bg-gray-800/50 rounded-lg">
+                        <p class="text-gray-400 text-xs mb-1">External</p>
+                        <p class="text-base font-bold text-purple-400" id="heap-external">--</p>
                     </div>
                 </div>
+            </div>
 
-                <!-- System Time -->
-                <div class="mb-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700/50 text-center">
-                    <div class="text-3xl font-bold mb-2 font-mono" id="system-time">--:--:--</div>
-                    <div class="text-lg text-gray-300 mb-3" id="system-date">--/--/----</div>
-                    <div class="text-sm text-gray-500 flex items-center justify-center">
+            <!-- System Time -->
+            <div
+                class="gradient-bg rounded-xl p-4 sm:p-6 shadow-lg border border-gray-700/50 hover:border-emerald-500/50 transition-all duration-300 card-hover backdrop-blur-sm">
+                <h3 class="font-semibold text-emerald-300 mb-4 flex items-center">
+                    <div class="p-1.5 bg-emerald-500/20 rounded-lg mr-2">
+                        <i class="fas fa-clock text-emerald-400 text-sm"></i>
+                    </div>
+                    System Time
+                </h3>
+                <div class="text-center">
+                    <div class="text-3xl font-bold mb-1 font-mono" id="system-time">--:--:--</div>
+                    <div class="text-sm text-gray-300 mb-2" id="system-date">--/--/----</div>
+                    <div class="text-xs text-gray-500 flex items-center justify-center">
                         <i class="fas fa-globe text-xs mr-1"></i>
                         <span id="timezone">UTC</span>
                     </div>
                 </div>
+            </div>
 
-                <!-- Battery Status -->
-                <div class="p-4 bg-gray-800/50 rounded-lg border border-gray-700/50" id="battery-card"
-                    style="display: none;">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-semibold text-lime-300 flex items-center">
-                            <i class="fas fa-battery-half text-sm mr-2"></i>
-                            Battery Status
-                        </h3>
-                        <span class="text-2xl font-bold" id="battery-level">--%</span>
-                    </div>
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-400">Status:</span>
-                            <span id="battery-status" class="font-semibold">Unknown</span>
+            <!-- Battery Status -->
+            <div class="gradient-bg rounded-xl p-4 sm:p-6 shadow-lg border border-gray-700/50 hover:border-lime-500/50 transition-all duration-300 card-hover backdrop-blur-sm"
+                id="battery-card" style="display: none;">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-lime-300 flex items-center">
+                        <div class="p-1.5 bg-green-500/20 rounded-lg mr-2">
+                            <i class="fas fa-battery-half text-lime-400 text-sm"></i>
                         </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-400">Time Left:</span>
-                            <span id="battery-time" class="font-semibold">--</span>
-                        </div>
-                        <div class="w-full bg-gray-700 rounded-full h-3">
-                            <div id="battery-progress"
-                                class="bg-gradient-to-r from-green-500 to-lime-400 h-3 rounded-full transition-all duration-500"
-                                style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- File System Info -->
-                <div class="p-4 bg-gray-800/50 rounded-lg border border-gray-700/50" id="filesystem-card">
-                    <h3 class="font-semibold text-pink-300 mb-4 flex items-center">
-                        <i class="fas fa-folder-open text-sm mr-2"></i>
-                        File System
+                        Battery
                     </h3>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-400">Type:</span>
-                            <span id="fs-type" class="font-semibold text-pink-100">--</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-400">Mount:</span>
-                            <span id="fs-mount" class="font-semibold text-pink-100">--</span>
-                        </div>
+                    <span class="text-2xl font-bold" id="battery-level">--%</span>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">Status:</span>
+                        <span id="battery-status" class="font-semibold">Unknown</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">Time Left:</span>
+                        <span id="battery-time" class="font-semibold">--</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div id="battery-progress"
+                            class="bg-gradient-to-r from-green-500 to-lime-400 h-2 rounded-full transition-all duration-500"
+                            style="width: 0%"></div>
                     </div>
                 </div>
             </div>
+
+            <!-- File Systems (dynamic) -->
+            <div class="gradient-bg rounded-xl p-4 sm:p-6 shadow-lg border border-gray-700/50 hover:border-pink-500/50 transition-all duration-300 card-hover backdrop-blur-sm"
+                id="filesystem-card">
+                <h3 class="font-semibold text-pink-300 mb-4 flex items-center">
+                    <div class="p-1.5 bg-pink-500/20 rounded-lg mr-2">
+                        <i class="fas fa-folder-open text-pink-400 text-sm"></i>
+                    </div>
+                    File Systems
+                </h3>
+                <p class="text-gray-400 text-sm">Loading...</p>
+            </div>
+
+            <!-- Storage Drives -->
+            <div
+                class="gradient-bg rounded-xl p-4 sm:p-6 shadow-lg border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300 card-hover backdrop-blur-sm">
+                <h3 class="font-semibold text-purple-300 mb-4 flex items-center">
+                    <div class="p-1.5 bg-purple-500/20 rounded-lg mr-2">
+                        <i class="fas fa-hdd text-purple-400 text-sm"></i>
+                    </div>
+                    Storage Drives
+                </h3>
+                <div class="space-y-3" id="disk-layout-container">
+                    <p class="text-gray-400 text-sm">Detecting drives...</p>
+                </div>
+            </div>
+
         </div>
 
         <!-- Network Interfaces -->

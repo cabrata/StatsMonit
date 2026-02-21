@@ -751,10 +751,8 @@ function updateFileSystemInfo(fsData) {
     const container = document.getElementById('filesystem-card');
     if (!container || !fsData) return;
 
-    // If it's the old single-object format, wrap it
     const mounts = Array.isArray(fsData) ? fsData : [fsData];
 
-    // Keep the header, rebuild the content
     let html = `<h3 class="font-semibold text-pink-300 mb-4 flex items-center">
         <i class="fas fa-folder-open text-sm mr-2"></i>
         File Systems (${mounts.length})
@@ -783,6 +781,48 @@ function updateFileSystemInfo(fsData) {
         });
         html += `</div>`;
     }
+
+    container.innerHTML = html;
+}
+
+function updateDiskLayout(diskLayoutData) {
+    const container = document.getElementById('disk-layout-container');
+    if (!container || !diskLayoutData || !Array.isArray(diskLayoutData)) return;
+
+    if (diskLayoutData.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-sm">No drives detected</p>';
+        return;
+    }
+
+    let html = '';
+    diskLayoutData.forEach(disk => {
+        const typeColor = disk.type === 'NVMe' ? 'text-cyan-400' :
+            disk.type === 'SSD' ? 'text-green-400' : 'text-yellow-400';
+        const typeBg = disk.type === 'NVMe' ? 'bg-cyan-500/20' :
+            disk.type === 'SSD' ? 'bg-green-500/20' : 'bg-yellow-500/20';
+        const diskIcon = disk.type === 'NVMe' ? 'fa-bolt' :
+            disk.type === 'SSD' ? 'fa-hdd' : 'fa-database';
+
+        html += `
+            <div class="p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <div class="flex items-center space-x-3 mb-2">
+                    <div class="p-2 ${typeBg} rounded-lg">
+                        <i class="fas ${diskIcon} ${typeColor}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium text-sm truncate">${disk.name}</div>
+                        <div class="text-xs text-gray-400">${disk.vendor || 'Unknown Vendor'}</div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${typeBg} ${typeColor}">${disk.type}</span>
+                    </div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-400">
+                    <span><i class="fas fa-plug text-xs mr-1"></i>${disk.interfaceType}</span>
+                    <span class="font-semibold text-purple-300">→ ${disk.size}</span>
+                </div>
+            </div>`;
+    });
 
     container.innerHTML = html;
 }
@@ -937,6 +977,7 @@ function updateStats(data) {
     updateHeapStats(data.heap);
     updateProcessCount(data.process_count);
     updateFileSystemInfo(data.file_system_info);
+    updateDiskLayout(data.disk_layout);
     updateNetworkSpeed(data.network_speed);
     updateSystemTime(data.system_time);
     updateBatteryStatus(data.battery_status);
