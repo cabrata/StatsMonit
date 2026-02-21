@@ -51,6 +51,7 @@ docker run -d \
   -p 8088:8088 \
   -e PORT=8088 \
   --restart unless-stopped \
+  --privileged \
   ghcr.io/cabrata/statsmonit:latest
 ```
 
@@ -76,6 +77,7 @@ services:
       - "8088:8088"
     environment:
       - PORT=8088
+    privileged: true
 ```
 
 Run:
