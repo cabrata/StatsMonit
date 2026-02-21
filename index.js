@@ -14,14 +14,12 @@ const clients = new Set()
 
 setInterval(async () => {
   const stats = await getStats()
-  console.log(stats) 
   for (const socket of clients) {
     socket.emit("stats", stats)
   }
 }, 3000)
 
 io.on("connection", (socket) => {
-  console.log("A client connected")
   clients.add(socket)
 
   // Kirim data awal saat pertama connect
@@ -32,7 +30,6 @@ io.on("connection", (socket) => {
 
   // Hapus dari daftar saat disconnect
   socket.on("disconnect", () => {
-    console.log("A client disconnected")
     clients.delete(socket)
   })
 })

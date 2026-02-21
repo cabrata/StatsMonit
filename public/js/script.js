@@ -748,10 +748,43 @@ function updateProcessCount(processData) {
 }
 
 function updateFileSystemInfo(fsData) {
-    if (!fsData) return;
+    const container = document.getElementById('filesystem-card');
+    if (!container || !fsData) return;
 
-    document.getElementById('fs-type').textContent = fsData.type;
-    document.getElementById('fs-mount').textContent = fsData.mount;
+    // If it's the old single-object format, wrap it
+    const mounts = Array.isArray(fsData) ? fsData : [fsData];
+
+    // Keep the header, rebuild the content
+    let html = `<h3 class="font-semibold text-pink-300 mb-4 flex items-center">
+        <i class="fas fa-folder-open text-sm mr-2"></i>
+        File Systems (${mounts.length})
+    </h3>`;
+
+    if (mounts.length === 0) {
+        html += `<p class="text-gray-400 text-sm">No file systems detected</p>`;
+    } else {
+        html += `<div class="space-y-3">`;
+        mounts.forEach(fs => {
+            const percent = parseFloat(fs.usedPercent) || 0;
+            html += `
+                <div class="p-2 bg-gray-800/30 rounded-lg">
+                    <div class="flex justify-between items-center text-sm mb-1">
+                        <span class="font-medium text-pink-200">${fs.mount}</span>
+                        <span class="text-xs text-gray-400">${fs.type}</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-400 mb-1">
+                        <span>${fs.used || '--'} / ${fs.size || '--'}</span>
+                        <span>${fs.usedPercent || 'N/A'}</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-1.5">
+                        <div class="bg-gradient-to-r from-pink-500 to-rose-400 h-1.5 rounded-full transition-all duration-500" style="width: ${percent}%"></div>
+                    </div>
+                </div>`;
+        });
+        html += `</div>`;
+    }
+
+    container.innerHTML = html;
 }
 
 function updateNetworkSpeed(networkSpeedData) {
